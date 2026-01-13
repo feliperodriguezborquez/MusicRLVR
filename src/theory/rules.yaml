@@ -1,0 +1,68 @@
+global_constraints:
+    # Restricciones rígidas globales. Si se violan, la melodía se descarta inmediatamente.
+    min_length: 8  # Longitud mínima en notas (incluyendo tónicas inicial/final).
+    max_length: 16 # Longitud máxima en notas.
+    max_range: 16  # Rango máximo permitido entre la nota más grave y la más aguda (semitonos). 16 = décima mayor.
+    max_leaps: 3   # Número máximo total de saltos (> 2 semitonos) permitidos en toda la melodía.
+    max_consecutive_dir_changes: 1 # Máximo de cambios de dirección seguidos (zig-zag). 1 significa que tras cambiar, debe mantener al menos un paso.
+    max_consecutive_steps_same_dir: 5 # Máximo de notas por grado conjunto en la misma dirección seguidas (evita escalas demasiado largas).
+    min_dist_leap_from_ends: 2   # Cuántas notas al principio y al final deben ser por grado conjunto (sin saltos).
+    allow_repeated_notes: false
+    allow_consecutive_leaps: false
+
+scale_rules:
+    # Definición de escala y tonalidad.
+    # Estos valores son predeterminados. El generador puede anularlos para crear variedad (e.g. Mi Mayor).
+    mode: minor
+    tonic: 62 # Re (D). 
+    allow_plagal_range: false # Si es true, permite bajar hasta la 4ta justa debajo de la tónica (Modo Plagal). Si false, Modo Auténtico.
+
+struct_rules:
+    # Reglas estructurales y de forma ('Soft Rules'). Se aplican probabilísticamente.
+    start_on_tonic: true
+    end_on_tonic: true
+    penultimate_stepwise: true
+    
+    lowest_note:
+        # Reglas sobre la nota más grave (Suelo).
+        limit: tonic # Piso ideal. 'tonic' fuerza a que no baje de la tónica (salvo Plagal).
+        singularity_prob: 0.8 # Probabilidad de rechazar si la nota más grave se repite (queremos que sea única).
+        approach_step_prob: 0.9 # Probabilidad de rechazar si se llega a la nota más grave por salto.
+
+    climax:
+        # Reglas sobre la nota más aguda (Punto culminante).
+        avoid_start_measures: 3 # Compases al inicio donde NO debe estar el clímax.
+        avoid_end_measures: 3   # Compases al final donde NO debe estar el clímax.
+        recovery_step_forced: true # Si true, obliga a bajar por grado conjunto después de saltar hacia el clímax (Ley del Retorno).
+        avoid_leading_tone_prob: 0.9 # Probabilidad de rechazar si el clímax es la Sensible.
+        max_range_from_lowest: 16
+
+    tritone_boundary_check: true
+
+melodic_rules:
+    # Intervalos melódicos permitidos y prohibidos.
+    # Valores en SEMITONOS:
+    # 1=2da m, 2=2da M, 3=3ra m, 4=3ra M, 5=4ta J, 7=5ta J, 8=6ta m, 12=8va J.
+    # Se excluyen 6ta Mayor (9) y 7mas (10, 11) por estilo estricto.
+    allowed_intervals: [1, 2, 3, 4, 5, 7, 8, 12]
+    forbidden_intervals: ["tritone", "augmented_second", "major_seventh"]
+    
+    minor_scale_logic:
+        # Lógica especial para escalas menores (melódica/armónica).
+        raised_sixth_requires_raised_seventh: true
+        raised_seventh_requires_tonic: true
+
+voice_leading_rules_placeholder:
+    # Reglas de conducción de voces (para futuro contrapunto a varias voces).
+    no_parallel_fifths: true
+    no_parallel_octaves: true
+    no_direct_fifths: true
+    max_parallel_thirds_sixths: 3
+
+probabilities:
+    # Pesos generales para la toma de decisiones estocástica.
+    prefer_step_motion: 0.7 # Preferencia base por moverse por grados conjuntos vs saltos.
+    allow_leap_prob: 0.3
+    max_range_dist:
+        octave: 0.8
+        tenth: 0.2
