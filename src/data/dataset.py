@@ -62,7 +62,8 @@ class MusicTokenizer:
     def __init__(self):
         self.special_tokens = [
             "<PAD>", "<BOS>", "<EOS>", 
-            "<STYLE_EXERCISE>", "<STYLE_REAL>", "<CF>", "<CP>"
+            "<STYLE_EXERCISE>", "<STYLE_REAL>", "<CF>", "<CP>",
+            "<SPECIES_1>", "<SPECIES_2>", "<SPECIES_3>", "<SPECIES_4>", "<SPECIES_5>"
         ]
         # Pitches MIDI 0-127
         self.pitch_tokens = [str(i) for i in range(128)]
