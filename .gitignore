@@ -1,0 +1,29 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyTorch
+*.pt
+*.pth
+
+# Virtual environments
+venv/
+env/
+.env
+
+# Logs and Tensorboard
+logs/
+runs/
+*.log
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+
+# macOS
+.DS_Store
+
+# Data and assets (keep the folder structure but ignore generated heavy contents if necessary)
+# data/synthetic_dataset.pt # Uncomment if you don't want to track generated data
