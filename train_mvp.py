@@ -8,7 +8,7 @@ import tqdm
 
 from src.data.dataset import MusicRLVRDataset, MusicTokenizer
 from src.models.policy import PolicyTransformer
-from src.rl.grpo import GRPOEngine
+from src.rl.grpo import GRPOEngine, masked_kl_penalty
 from src.rl.rewards import CounterpointRules
 from src.utils.reproducibility import seed_everything
 
@@ -187,8 +187,7 @@ class MusicGRPOTrainer:
             ref_logits = self.ref_model(generated_seqs)[:, :-1, :]
             ref_log_probs = torch.gather(ref_logits.log_softmax(dim=-1), -1, labels.unsqueeze(-1)).squeeze(-1)
             
-        ratio_log = old_log_probs - ref_log_probs
-        kl_penalty = CONFIG["beta"] * (torch.exp(ratio_log) - ratio_log - 1)
+        kl_penalty = masked_kl_penalty(old_log_probs, ref_log_probs, mask, CONFIG["beta"])
         
         # Loss
         loss_val = self.grpo.ppo_loss(old_log_probs, old_log_probs, adv, kl_penalty, mask)

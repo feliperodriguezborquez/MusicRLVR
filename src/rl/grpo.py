@@ -1,6 +1,20 @@
 import torch
 import torch.nn.functional as F
 
+
+def masked_kl_penalty(log_probs, ref_log_probs, mask, beta):
+    """Compute GRPO KL only at active positions.
+
+    Exclude padding before subtraction and exp, so finite differences at
+    inactive positions cannot overflow and poison backward through 0 * inf.
+    """
+    active = mask != 0
+    current = torch.where(active, log_probs, 0.0)
+    reference = torch.where(active, ref_log_probs, 0.0)
+    log_ratio = current - reference
+    return beta * (torch.exp(log_ratio) - log_ratio - 1)
+
+
 class GRPOEngine:
     """
     Group Relative Policy Optimization (GRPO).
@@ -125,7 +139,10 @@ class GRPOEngine:
         """
         Calculates the GRPO/PPO clipped loss.
         """
-        ratio = torch.exp(log_probs - old_log_probs)
+        active = mask != 0
+        current = torch.where(active, log_probs, 0.0)
+        old = torch.where(active, old_log_probs, 0.0)
+        ratio = torch.exp(current - old)
         
         surr1 = ratio * advantages
         surr2 = torch.clamp(ratio, 1.0 - self.clip_param, 1.0 + self.clip_param) * advantages
