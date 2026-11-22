@@ -125,7 +125,8 @@ class GRPOEngine:
         """
         Calculates the GRPO/PPO clipped loss.
         """
-        ratio = torch.exp(log_probs - old_log_probs)
+        log_ratio = torch.where(mask.bool(), log_probs - old_log_probs, 0.0)
+        ratio = log_ratio.exp()
         
         surr1 = ratio * advantages
         surr2 = torch.clamp(ratio, 1.0 - self.clip_param, 1.0 + self.clip_param) * advantages
